@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Forms;
 using System.Xml.Linq;
 
 namespace Drive_FIle_Uploader_v3
@@ -7,16 +8,15 @@ namespace Drive_FIle_Uploader_v3
     {
         private System.ComponentModel.IContainer components = null;
 
-        // Button, TextBox, and ProgressBar declarations
         private System.Windows.Forms.Button btnChooseFile;
         private System.Windows.Forms.Button btnUpload;
         private System.Windows.Forms.TextBox txtFileName;
         private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.PictureBox logoPictureBox;
+        private System.Windows.Forms.Label lblTitle;
+        private System.Windows.Forms.Label lblWelcome;
+        private System.Windows.Forms.Label lblInstructions;
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -26,64 +26,108 @@ namespace Drive_FIle_Uploader_v3
             base.Dispose(disposing);
         }
 
-        #region Windows Form Designer generated code
-
-        /// <summary>
-        /// Required method for Designer support - do not modify
-        /// the contents of this method with the code editor.
-        /// </summary>
         private void InitializeComponent()
         {
             btnChooseFile = new Button();
             btnUpload = new Button();
             txtFileName = new TextBox();
             progressBar = new ProgressBar();
+            logoPictureBox = new PictureBox();
+            lblTitle = new Label();
+            lblWelcome = new Label();
+            lblInstructions = new Label();
+            ((System.ComponentModel.ISupportInitialize)logoPictureBox).BeginInit();
             SuspendLayout();
             // 
             // btnChooseFile
             // 
-            btnChooseFile.Location = new Point(12, 12);
+            btnChooseFile.Location = new Point(12, 140);
             btnChooseFile.Name = "btnChooseFile";
-            btnChooseFile.Size = new Size(75, 23);
+            btnChooseFile.Size = new Size(100, 30);
             btnChooseFile.TabIndex = 0;
             btnChooseFile.Text = "Choose File";
             btnChooseFile.UseVisualStyleBackColor = true;
             // 
             // btnUpload
             // 
-            btnUpload.Location = new Point(12, 41);
+            btnUpload.Location = new Point(120, 140);
             btnUpload.Name = "btnUpload";
-            btnUpload.Size = new Size(75, 23);
+            btnUpload.Size = new Size(100, 30);
             btnUpload.TabIndex = 1;
             btnUpload.Text = "Upload";
             btnUpload.UseVisualStyleBackColor = true;
             // 
             // txtFileName
             // 
-            txtFileName.Location = new Point(93, 14);
+            txtFileName.Location = new Point(12, 180);
             txtFileName.Name = "txtFileName";
-            txtFileName.Size = new Size(179, 23);
+            txtFileName.Size = new Size(341, 23);
             txtFileName.TabIndex = 2;
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(12, 70);
+            progressBar.Location = new Point(12, 210);
             progressBar.Name = "progressBar";
-            progressBar.Size = new Size(260, 23);
+            progressBar.Size = new Size(341, 23);
             progressBar.TabIndex = 3;
+            // 
+            // logoPictureBox
+            // 
+            logoPictureBox.Location = new Point(12, 12);
+            logoPictureBox.Name = "logoPictureBox";
+            logoPictureBox.Size = new Size(80, 80);
+            logoPictureBox.SizeMode = PictureBoxSizeMode.StretchImage;
+            logoPictureBox.Image = System.Drawing.Image.FromFile("logo.jpg");
+            logoPictureBox.TabIndex = 3;
+            logoPictureBox.TabStop = false;
+            logoPictureBox.Click += logoPictureBox_Click;
+            // 
+            // lblTitle
+            // 
+            lblTitle.AutoSize = true;
+            lblTitle.Font = new System.Drawing.Font("Arial", 18F, FontStyle.Bold);
+            lblTitle.Location = new Point(100, 20);
+            lblTitle.Name = "lblTitle";
+            lblTitle.Size = new Size(232, 29);
+            lblTitle.TabIndex = 0;
+            lblTitle.Text = "Drive File Uploader";
+            // 
+            // lblWelcome
+            // 
+            lblWelcome.AutoSize = true;
+            lblWelcome.Font = new System.Drawing.Font("Arial", 12F);
+            lblWelcome.Location = new Point(100, 50);
+            lblWelcome.Name = "lblWelcome";
+            lblWelcome.Size = new Size(245, 18);
+            lblWelcome.TabIndex = 1;
+            lblWelcome.Text = "Welcome! Upload your files easily.";
+            // 
+            // lblInstructions
+            // 
+            lblInstructions.AutoSize = true;
+            lblInstructions.Font = new System.Drawing.Font("Arial", 10F);
+            lblInstructions.Location = new Point(12, 100);
+            lblInstructions.Name = "lblInstructions";
+            lblInstructions.Size = new Size(159, 32);
+            lblInstructions.TabIndex = 2;
+            lblInstructions.Text = "1. Choose a file.\n2. Click 'Upload' to start.";
             // 
             // Form1
             // 
-            ClientSize = new Size(284, 101);
+            ClientSize = new Size(365, 250);
+            Controls.Add(lblTitle);
+            Controls.Add(lblWelcome);
+            Controls.Add(lblInstructions);
+            Controls.Add(logoPictureBox);
             Controls.Add(progressBar);
             Controls.Add(txtFileName);
             Controls.Add(btnUpload);
             Controls.Add(btnChooseFile);
             Name = "Form1";
+            Text = "Drive File Uploader";
+            ((System.ComponentModel.ISupportInitialize)logoPictureBox).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
-
-        #endregion
     }
 }

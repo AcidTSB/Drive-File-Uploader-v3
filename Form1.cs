@@ -1,36 +1,37 @@
-﻿using System;
+﻿using Google.Apis.Auth.OAuth2;
+using Google.Apis.Drive.v3;
+using Google.Apis.Services;
+using Google.Apis.Upload;
+using Google.Apis.Util.Store;
+using System;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Drive.v3;
-using Google.Apis.Services;
-using Google.Apis.Util.Store;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 namespace Drive_FIle_Uploader_v3
 {
     public partial class Form1 : Form
     {
+        private UserCredential credential;
         private DriveService service;
-        private string[] Scopes = { DriveService.Scope.DriveFile };
-        private string ApplicationName = "Drive API .NET Quickstart";
 
         public Form1()
         {
             InitializeComponent();
             InitializeDriveService();
+            btnChooseFile.Click += BtnChooseFile_Click;
+            btnUpload.Click += BtnUpload_Click;
         }
 
         private void InitializeDriveService()
         {
-            UserCredential credential;
-
             using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
                 string credPath = "token.json";
                 credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.Load(stream).Secrets,
-                    Scopes,
+                    new[] { DriveService.Scope.DriveFile },
                     "user",
                     CancellationToken.None,
                     new FileDataStore(credPath, true)).Result;
@@ -39,36 +40,30 @@ namespace Drive_FIle_Uploader_v3
             service = new DriveService(new BaseClientService.Initializer()
             {
                 HttpClientInitializer = credential,
-                ApplicationName = ApplicationName,
+                ApplicationName = "Drive API .NET Quickstart",
             });
         }
 
-        private void btnChooseFile_Click(object sender, EventArgs e)
+        private void BtnChooseFile_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Chọn tệp để upload lên Google Drive";
             openFileDialog.Filter = "All files (*.*)|*.*";
-
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 txtFileName.Text = openFileDialog.FileName;
             }
         }
 
-        private void btnUpload_Click(object sender, EventArgs e)
+        private void BtnUpload_Click(object sender, EventArgs e)
         {
-            if (!string.IsNullOrEmpty(txtFileName.Text) && File.Exists(txtFileName.Text))
+            if (string.IsNullOrEmpty(txtFileName.Text))
             {
-                UploadFileToDrive(txtFileName.Text);
+                MessageBox.Show("Hãy chọn tệp trước khi upload.");
+                return;
             }
-            else
-            {
-                MessageBox.Show("Please choose a valid file.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
 
-        private void UploadFileToDrive(string filePath)
-        {
+            string filePath = txtFileName.Text;
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
                 Name = Path.GetFileName(filePath)
@@ -76,12 +71,26 @@ namespace Drive_FIle_Uploader_v3
 
             using (var stream = new FileStream(filePath, FileMode.Open))
             {
-                var request = service.Files.Create(fileMetadata, stream, "application/octet-stream");
+                FilesResource.CreateMediaUpload request = service.Files.Create(fileMetadata, stream, "application/octet-stream");
                 request.Fields = "id";
+                request.ProgressChanged += Request_ProgressChanged;
                 request.Upload();
                 var file = request.ResponseBody;
-                MessageBox.Show("File uploaded successfully. ID: " + file.Id, "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("File đã upload, ID: " + file.Id);
             }
+        }
+
+        private void Request_ProgressChanged(IUploadProgress progress)
+        {
+            if (progress.Status == UploadStatus.Uploading)
+            {
+                progressBar.Value = (int)(progress.BytesSent / 1024);
+            }
+        }
+
+        private void logoPictureBox_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
