@@ -16,6 +16,10 @@ namespace Drive_FIle_Uploader_v3
         private System.Windows.Forms.Label lblTitle;
         private System.Windows.Forms.Label lblWelcome;
         private System.Windows.Forms.Label lblInstructions;
+        private System.Windows.Forms.ListView fileListView;
+        private System.Windows.Forms.ColumnHeader columnFileName;
+        private System.Windows.Forms.ColumnHeader columnStatus;
+        private Label lblUploadStatus;
 
         protected override void Dispose(bool disposing)
         {
@@ -36,6 +40,10 @@ namespace Drive_FIle_Uploader_v3
             lblTitle = new Label();
             lblWelcome = new Label();
             lblInstructions = new Label();
+            fileListView = new ListView();
+            columnFileName = new ColumnHeader();
+            columnStatus = new ColumnHeader();
+            lblUploadStatus = new Label();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).BeginInit();
             SuspendLayout();
             // 
@@ -66,7 +74,7 @@ namespace Drive_FIle_Uploader_v3
             // 
             // progressBar
             // 
-            progressBar.Location = new Point(12, 210);
+            progressBar.Location = new Point(12, 239);
             progressBar.Name = "progressBar";
             progressBar.Size = new Size(341, 23);
             progressBar.TabIndex = 3;
@@ -80,7 +88,6 @@ namespace Drive_FIle_Uploader_v3
             logoPictureBox.Image = System.Drawing.Image.FromFile("logo.jpg");
             logoPictureBox.TabIndex = 3;
             logoPictureBox.TabStop = false;
-            logoPictureBox.Click += logoPictureBox_Click;
             // 
             // lblTitle
             // 
@@ -112,14 +119,47 @@ namespace Drive_FIle_Uploader_v3
             lblInstructions.TabIndex = 2;
             lblInstructions.Text = "1. Choose a file.\n2. Click 'Upload' to start.";
             // 
+            // fileListView
+            // 
+            fileListView.Columns.AddRange(new ColumnHeader[] { columnFileName, columnStatus });
+            fileListView.FullRowSelect = true;
+            fileListView.GridLines = true;
+            fileListView.Location = new Point(12, 268);
+            fileListView.MultiSelect = false;
+            fileListView.Name = "fileListView";
+            fileListView.Size = new Size(341, 120);
+            fileListView.TabIndex = 4;
+            fileListView.UseCompatibleStateImageBehavior = false;
+            fileListView.View = View.Details;
+            // 
+            // columnFileName
+            // 
+            columnFileName.Text = "Tên File";
+            columnFileName.Width = 220;
+            // 
+            // columnStatus
+            // 
+            columnStatus.Text = "Trạng Thái";
+            columnStatus.Width = 100;
+            // 
+            // lblUploadStatus
+            // 
+            lblUploadStatus.Location = new Point(12, 206);
+            lblUploadStatus.Name = "lblUploadStatus";
+            lblUploadStatus.Size = new Size(341, 23);
+            lblUploadStatus.TabIndex = 0;
+            lblUploadStatus.Text = "Sẵn sàng để upload.";
+            // 
             // Form1
             // 
-            ClientSize = new Size(365, 250);
+            ClientSize = new Size(365, 400);
+            Controls.Add(lblUploadStatus);
+            Controls.Add(progressBar);
+            Controls.Add(fileListView);
             Controls.Add(lblTitle);
             Controls.Add(lblWelcome);
             Controls.Add(lblInstructions);
             Controls.Add(logoPictureBox);
-            Controls.Add(progressBar);
             Controls.Add(txtFileName);
             Controls.Add(btnUpload);
             Controls.Add(btnChooseFile);
