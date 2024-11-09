@@ -4,6 +4,7 @@ using Google.Apis.Services;
 using Google.Apis.Upload;
 using Google.Apis.Util.Store;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
@@ -19,24 +20,67 @@ namespace Drive_FIle_Uploader_v3
         public Form1()
         {
             InitializeComponent();
-            InitializeDriveService();
             progressBar.Maximum = 100;
 
             btnChooseFile.Click += BtnChooseFile_Click;
             btnUpload.Click += BtnUpload_Click;
+
+            fileListView.AllowDrop = true;
+            fileListView.DragEnter += new DragEventHandler(fileListView_DragEnter);
+            fileListView.DragDrop += new DragEventHandler(fileListView_DragDrop);
+
+            btnLogin.Click += BtnLogin_Click;
+            btnLogout.Click += BtnLogout_Click;
+
+            btnChooseFile.Enabled = false;
+            btnUpload.Enabled = false;
+            btnLogout.Enabled = false;
         }
 
-        private void InitializeDriveService()
+        private async void BtnLogin_Click(object sender, EventArgs e)
+        {
+            await InitializeDriveService();
+
+            btnChooseFile.Enabled = true;
+            btnUpload.Enabled = true;
+            btnLogout.Enabled = true;
+            btnLogin.Enabled = false;
+
+            MessageBox.Show("Đăng nhập thành công!. Bây giờ bạn đã có thể upload file(s).");
+        }
+
+
+        private void BtnLogout_Click(object sender, EventArgs e)
+        {
+            // Xóa token.json để logout
+            string credPath = "token.json";
+            if (Directory.Exists(credPath))
+            {
+                Directory.Delete(credPath, true);
+            }
+
+            btnChooseFile.Enabled = false;
+            btnUpload.Enabled = false;
+            btnLogin.Enabled = true;
+            btnLogout.Enabled = false;
+
+            // Xóa tất cả các file trong ListView
+            ClearUploadState();
+
+            MessageBox.Show("Đăng xuất thành công. Hãy đăng nhập lại để có thể sử dụng.");
+        }
+
+        private async Task InitializeDriveService()
         {
             using (var stream = new FileStream("credentials.json", FileMode.Open, FileAccess.Read))
             {
                 string credPath = "token.json";
-                credential = GoogleWebAuthorizationBroker.AuthorizeAsync(
+                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.Load(stream).Secrets,
                     new[] { DriveService.Scope.DriveFile },
                     "user",
                     CancellationToken.None,
-                    new FileDataStore(credPath, true)).Result;
+                    new FileDataStore(credPath, true));
             }
 
             service = new DriveService(new BaseClientService.Initializer()
@@ -46,28 +90,139 @@ namespace Drive_FIle_Uploader_v3
             });
         }
 
-        private void BtnChooseFile_Click(object sender, EventArgs e)
+        // Hàm xử lý sự kiện DragEnter cho ListView
+        void fileListView_DragEnter(object sender, DragEventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Chọn tệp để upload lên Google Drive";
-            openFileDialog.Filter = "All files (*.*)|*.*";
-            openFileDialog.Multiselect = true;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
             {
-                // Xóa danh sách cũ trước khi thêm mới
-                fileListView.Items.Clear();
+                e.Effect = DragDropEffects.Copy;
+            }
+            else
+            {
+                e.Effect = DragDropEffects.None;
+            }
+        }
 
-                foreach (string fileName in openFileDialog.FileNames)
+
+        // Hàm xử lý sự kiện DragDrop cho ListView
+        void fileListView_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            foreach (string file in files)
+            {
+                // Kiểm tra nếu file đã có trong danh sách thì bỏ qua
+                if (!IsFileAlreadyAdded(file))
                 {
-                    // Thêm từng file vào ListView
-                    ListViewItem item = new ListViewItem(Path.GetFileName(fileName));
+                    // Thêm file vào ListView
+                    ListViewItem item = new ListViewItem(Path.GetFileName(file))
+                    {
+                        Tag = file
+                    };
                     item.SubItems.Add("Chưa upload");
-                    item.Tag = fileName; // Lưu đường dẫn file trong Tag
                     fileListView.Items.Add(item);
                 }
             }
         }
+
+        private string PrepareFileName(string fileName)
+        {
+            foreach (char c in Path.GetInvalidFileNameChars())
+            {
+                fileName = fileName.Replace(c, '_'); // Thay thế ký tự đặc biệt bằng '_'
+            }
+            return fileName;
+        }
+
+        private void BtnChooseFile_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Chọn các tệp để upload lên Google Drive",
+                Filter = "All files (*.*)|*.*",
+                Multiselect = true // Cho phép chọn nhiều file
+            };
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                // Lặp qua tất cả các file đã chọn và thêm vào ListView
+                foreach (string filePath in openFileDialog.FileNames)
+                {
+                    // Kiểm tra nếu file đã có trong danh sách thì bỏ qua
+                    string safeFileName = PrepareFileName(Path.GetFileName(filePath));
+                    if (!IsFileAlreadyAdded(filePath))
+                    {
+                        // Thêm file vào ListView
+                        ListViewItem item = new ListViewItem(Path.GetFileName(filePath))
+                        {
+                            Tag = filePath
+                        };
+                        item.SubItems.Add("Chưa upload");
+                        fileListView.Items.Add(item);
+                    }
+                }
+            }
+        }
+
+        // Hàm để kiểm tra xem file đã có trong ListView hay chưa
+        private bool IsFileAlreadyAdded(string filePath)
+        {
+            foreach (ListViewItem item in fileListView.Items)
+            {
+                if (item.Tag != null && item.Tag.ToString() == filePath)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        private void BtnRemoveFile_Click(object sender, EventArgs e)
+        {
+            // Xóa mục được chọn trong fileListView
+            if (fileListView.SelectedItems.Count > 0)
+            {
+                foreach (ListViewItem selectedItem in fileListView.SelectedItems)
+                {
+                    fileListView.Items.Remove(selectedItem);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Hãy chọn một file để xóa.");
+            }
+        }
+
+        // Hàm xử lý sự kiện khi nhấn nút "Remove Selected"
+        private void BtnRemoveSelected_Click(object sender, EventArgs e)
+        {
+            if (fileListView.SelectedItems.Count > 0)
+            {
+                foreach (ListViewItem selectedItem in fileListView.SelectedItems)
+                {
+                    fileListView.Items.Remove(selectedItem);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Hãy chọn một hoặc nhiều file để xóa.");
+            }
+        }
+
+        // Hàm xử lý sự kiện khi nhấn nút "Select All"
+        private void BtnSelectAll_Click(object sender, EventArgs e)
+        {
+            // Nếu tất cả mục đã được chọn thì bỏ chọn, nếu chưa chọn hết thì chọn tất cả
+            bool allSelected = fileListView.SelectedItems.Count == fileListView.Items.Count;
+            fileListView.MultiSelect = true;
+
+            foreach (ListViewItem item in fileListView.Items)
+            {
+                item.Selected = !allSelected;
+            }
+        }
+
+        // Hàm xử lý sự kiện khi nhấn nút "Upload"
         private async void BtnUpload_Click(object sender, EventArgs e)
         {
             if (fileListView.Items.Count == 0)
@@ -116,33 +271,50 @@ namespace Drive_FIle_Uploader_v3
             lblUploadStatus.Text = "Sẵn sàng để upload.";
         }
 
+        // Hàm upload file lên Google Drive
         private async Task UploadFileAsync(string filePath)
         {
+            string safeFileName = PrepareFileName(Path.GetFileName(filePath));
             var fileMetadata = new Google.Apis.Drive.v3.Data.File()
             {
-                Name = Path.GetFileName(filePath)
+                Name = safeFileName
             };
 
-            using (var stream = new FileStream(filePath, FileMode.Open))
+            try
             {
-                var request = service.Files.Create(fileMetadata, stream, "application/octet-stream");
-                request.Fields = "id";
-                request.ProgressChanged += Request_ProgressChanged;
-
-                await request.UploadAsync(); // Sử dụng async để không chặn UI
+                using (var stream = new FileStream(filePath, FileMode.Open))
+                {
+                    var request = service.Files.Create(fileMetadata, stream, "application/octet-stream");
+                    request.Fields = "id";
+                    request.Upload();
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi trong quá trình upload: " + ex.Message);
             }
         }
 
 
+        // Hàm xử lý sự kiện khi upload file
         private void Request_ProgressChanged(IUploadProgress progress)
         {
             if (progress.Status == UploadStatus.Uploading)
             {
+                // Kiểm tra xem txtFilePath.Text có hợp lệ không
+                string filePath = txtFileName.Text;
+
+                if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
+                {
+                    MessageBox.Show("Đường dẫn file không hợp lệ.");
+                    return;
+                }
+
                 long bytesSent = progress.BytesSent;
-                long totalSize = new FileInfo(txtFileName.Text).Length;
+                long totalSize = new FileInfo(filePath).Length;
                 int percentage = (int)((bytesSent * 100) / totalSize);
 
-                // Sử dụng Invoke để cập nhật UI từ thread khác
+                // Cập nhật progress bar trên UI
                 progressBar.Invoke((MethodInvoker)(() =>
                 {
                     if (percentage >= 0 && percentage <= 100)
@@ -162,6 +334,16 @@ namespace Drive_FIle_Uploader_v3
             }
         }
 
+
+        private void lblUploadStatus_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
 
     }
 }
