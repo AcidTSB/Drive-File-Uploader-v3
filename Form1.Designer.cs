@@ -82,7 +82,7 @@ namespace Drive_FIle_Uploader_v3
             // 
             // btnChooseFile
             // 
-            btnChooseFile.BackColor = SystemColors.ButtonFace;
+            btnChooseFile.BackColor = SystemColors.ButtonHighlight;
             btnChooseFile.Font = new System.Drawing.Font("Arial", 12F);
             btnChooseFile.ForeColor = Color.Black;
             btnChooseFile.Location = new Point(24, 280);
@@ -94,7 +94,7 @@ namespace Drive_FIle_Uploader_v3
             // 
             // btnUpload
             // 
-            btnUpload.BackColor = SystemColors.ButtonFace;
+            btnUpload.BackColor = SystemColors.ButtonHighlight;
             btnUpload.Font = new System.Drawing.Font("Arial", 12F);
             btnUpload.ForeColor = Color.Black;
             btnUpload.Location = new Point(370, 280);
