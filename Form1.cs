@@ -31,6 +31,9 @@ namespace Drive_FIle_Uploader_v3
 
             btnLogin.Click += BtnLogin_Click;
             btnLogout.Click += BtnLogout_Click;
+            btnRemoveFile.Click += BtnRemoveFile_Click;
+            btnSelectAll.Click += BtnSelectAll_Click;
+            btnRemoveSelected.Click += BtnRemoveSelected_Click;
 
             btnChooseFile.Enabled = false;
             btnUpload.Enabled = false;
@@ -212,13 +215,24 @@ namespace Drive_FIle_Uploader_v3
         // Hàm xử lý sự kiện khi nhấn nút "Select All"
         private void BtnSelectAll_Click(object sender, EventArgs e)
         {
-            // Nếu tất cả mục đã được chọn thì bỏ chọn, nếu chưa chọn hết thì chọn tất cả
+            // Kiểm tra xem tất cả các mục đã được chọn hay chưa
             bool allSelected = fileListView.SelectedItems.Count == fileListView.Items.Count;
-            fileListView.MultiSelect = true;
 
-            foreach (ListViewItem item in fileListView.Items)
+            // Nếu tất cả đã được chọn, bỏ chọn tất cả
+            if (allSelected)
             {
-                item.Selected = !allSelected;
+                foreach (ListViewItem item in fileListView.Items)
+                {
+                    item.Selected = false;
+                }
+            }
+            // Nếu chưa chọn hết, chọn tất cả
+            else
+            {
+                foreach (ListViewItem item in fileListView.Items)
+                {
+                    item.Selected = true;
+                }
             }
         }
 

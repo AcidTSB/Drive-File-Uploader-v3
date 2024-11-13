@@ -53,6 +53,7 @@ namespace Drive_FIle_Uploader_v3
             lblUploadStatus = new Label();
             btnRemoveSelected = new Button();
             btnSelectAll = new Button();
+            btnRemoveFile = new Button();
             ((System.ComponentModel.ISupportInitialize)logoPictureBox).BeginInit();
             SuspendLayout();
             // 
@@ -169,7 +170,6 @@ namespace Drive_FIle_Uploader_v3
             fileListView.FullRowSelect = true;
             fileListView.GridLines = true;
             fileListView.Location = new Point(24, 460);
-            fileListView.MultiSelect = false;
             fileListView.Name = "fileListView";
             fileListView.Size = new Size(682, 240);
             fileListView.TabIndex = 4;
@@ -206,7 +206,7 @@ namespace Drive_FIle_Uploader_v3
             btnRemoveSelected.Name = "btnRemoveSelected";
             btnRemoveSelected.Size = new Size(157, 31);
             btnRemoveSelected.TabIndex = 5;
-            btnRemoveSelected.Text = "Bỏ chọn";
+            btnRemoveSelected.Text = "Xoá tệp đã chọn";
             btnRemoveSelected.UseVisualStyleBackColor = false;
             // 
             // btnSelectAll
@@ -220,6 +220,13 @@ namespace Drive_FIle_Uploader_v3
             btnSelectAll.TabIndex = 6;
             btnSelectAll.Text = "Chọn tất cả";
             btnSelectAll.UseVisualStyleBackColor = false;
+            // 
+            // btnRemoveFile
+            // 
+            btnRemoveFile.Location = new Point(0, 0);
+            btnRemoveFile.Name = "btnRemoveFile";
+            btnRemoveFile.Size = new Size(75, 23);
+            btnRemoveFile.TabIndex = 0;
             // 
             // Form1
             // 
