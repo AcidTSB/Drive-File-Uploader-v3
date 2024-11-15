@@ -248,30 +248,46 @@ namespace Drive_FIle_Uploader_v3
             int totalFiles = fileListView.Items.Count;
             int filesUploaded = 0;
 
+            var uploadTasks = new List<Task>();
+
             foreach (ListViewItem item in fileListView.Items)
             {
                 string filePath = item.Tag.ToString();
                 item.SubItems[1].Text = "Đang upload...";
 
-                // Upload file mà không hiển thị MessageBox
-                await UploadFileAsync(filePath);
+                // Create a task for each file upload
+                var uploadTask = Task.Run(async () =>
+                {
+                    await UploadFileAsync(filePath);
+                    fileListView.Invoke((MethodInvoker)(() => item.SubItems[1].Text = "Đã hoàn thành"));
+                    Interlocked.Increment(ref filesUploaded);
 
-                // Cập nhật trạng thái sau khi upload xong
-                item.SubItems[1].Text = "Đã hoàn thành";
-                filesUploaded++;
+                    // Update overall progress
+                    int percentage = (filesUploaded * 100) / totalFiles;
+                    progressBar.Invoke((MethodInvoker)(() => progressBar.Value = percentage));
 
-                // Cập nhật progress tổng thể
-                int percentage = (filesUploaded * 100) / totalFiles;
-                progressBar.Value = percentage;
+                    // Update status on lblUploadStatus
+                    lblUploadStatus.Invoke((MethodInvoker)(() => lblUploadStatus.Text = $"{filesUploaded}/{totalFiles} file đã được upload."));
+                }).ContinueWith(t =>
+                {
+                    if (t.IsFaulted)
+                    {
+                        fileListView.Invoke((MethodInvoker)(() => item.SubItems[1].Text = "Lỗi upload"));
+                    }
+                });
 
-                // Cập nhật trạng thái trên lblUploadStatus
-                lblUploadStatus.Text = $"{filesUploaded}/{totalFiles} file đã được upload.";
+                uploadTasks.Add(uploadTask);
             }
 
-            // Chỉ hiển thị MessageBox khi tất cả các file đã được upload
+            // Wait for all upload tasks to complete
+            await Task.WhenAll(uploadTasks);
+
+            // Show message box when all files are uploaded
             MessageBox.Show("Tất cả các file đã được upload thành công.");
             ClearUploadState();
         }
+
+
 
         private void ClearUploadState()
         {
